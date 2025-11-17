@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfólio - Cruz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .header {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 5px;
+            margin-bottom: 1px;
+            z-index: 100;
+            /*background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);*/
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            letter-spacing: 0.3rem;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #00f5ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .gallery-container {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 2000px;
+        }
+
+        .photo-frame {
+            position: absolute;
+            width: auto;
+            height: 75vh;
+            max-height: 1400px;
+            max-width: 35vw;
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transform-style: preserve-3d;
+        }
+
+        .photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 245, 255, 0.3);
+            filter: brightness(0.9);
+            transition: all 0.5s ease;
+        }
+
+        .photo-frame.active {
+            z-index: 10;
+            transform: scale(1) translateZ(0) rotateY(0deg);
+            opacity: 1;
+        }
+
+        .photo-frame.prev {
+            z-index: 5;
+            transform: scale(0.8) translateX(-40%) translateZ(-200px) rotateY(20deg);
+            opacity: 0.4;
+        }
+
+        .photo-frame.next {
+            z-index: 5;
+            transform: scale(0.8) translateX(40%) translateZ(-200px) rotateY(-20deg);
+            opacity: 0.4;
+        }
+
+        .photo-frame.hidden {
+            opacity: 0;
+            transform: scale(0.5) translateZ(-400px);
+            pointer-events: none;
+        }
+
+        .photo-frame.active img {
+            filter: brightness(1);
+            box-shadow: 0 30px 80px rgba(255, 0, 255, 0.4), 0 0 40px rgba(0, 245, 255, 0.2);
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 2rem;
+            z-index: 100;
+        }
+
+        .btn {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #00f5ff;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+            color: #00f5ff;
+        }
+
+        .btn:hover {
+            background: rgba(0, 245, 255, 0.2);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+        }
+
+        .photo-info {
+            position: fixed;
+            bottom: 8rem;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 100;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+            animation-delay: 0.3s;
+        }
+
+        .photo-info h2 {
+            font-size: 1.2rem;
+            font-weight: 400;
+            letter-spacing: 0.15rem;
+            margin-bottom: 0.3rem;
+            color: #00f5ff;
+        }
+
+        .photo-info p {
+            font-size: 0.95rem;
+            color: #aaa;
+            letter-spacing: 0.05rem;
+        }
+
+        .instagram-btn {
+            position: fixed;
+            bottom: 20px;     /* distância do fundo */
+            right: 20px;      /* distância da direita */
+            width: 40px;      /* tamanho do botão */
+            height: 40px;
+            cursor: pointer;
+            z-index: 9999;    /* garante que fica por cima */
+        }
+
+        .instagram-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #00f5ff, #ff00ff);
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+
+        .background-glow {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(0, 245, 255, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .photo-frame {
+                width: 85vw;
+                height: 60vh;
+            }
+            
+            .controls {
+                bottom: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-glow"></div>
+    
+    <div class="header">
+        <h1>André Cruz</h1>
+    </div>
+
+    <div class="gallery-container" id="gallery">
+        <!-- As fotos serão inseridas aqui -->
+    </div>
+
+    <div class="photo-info" id="photoInfo">
+        <h2 id="photoDate">2025</h2>
+    </div>
+
+    <div class="controls">
+        <button class="btn" id="prevBtn">‹</button>
+        <button class="btn" id="nextBtn">›</button>
+    </div>
+
+    <a href="https://www.instagram.com/_.acshots._/?utm_source=ig_web_button_share_sheet" target="_blank" title="Instagram" class="instagram-btn">
+        <img src="insta.png" alt="Instagram">
+    </a>
+
+    <div class="progress-bar" id="progressBar"></div>
+
+    <script>
+        // Array de fotos de exemplo (substitua pelos seus ficheiros)
+                const photos = [
+                    {
+                        file: '1.JPG',
+                        date: '2025',
+                        location: ''
+                    },
+                    {
+                        file: '2.JPG',
+                        date: '2024',
+                        location: 'Gerês, Portugal'
+                    },
+                    {
+                        file: '3.JPG',
+                        date: '2024',
+                        location: 'Porto, Portugal'
+                    },
+                    {
+                        file: '4.JPG',
+                        date: '2025',
+                        location: 'Algarve, Portugal'
+                    },
+                    {
+                        file: '5.JPG',
+                        date: '2025',
+                        location: 'Sintra, Portugal'
+                    },
+                    {
+                        file: '6.JPG',
+                        date: '2025',
+                        location: 'Serra da Estrela, Portugal'
+                    },
+                    {
+                        file: '7.JPG',
+                        date: '2025',
+                        location: 'Gerês, Portugal'
+                    },
+                    {
+                        file: '8.JPG',
+                        date: '2025',
+                        location: 'Porto, Portugal'
+                    },
+                    {
+                        file: '9.JPG',
+                        date: '2025',
+                        location: 'Algarve, Portugal'
+                    },
+                    {
+                        file: '10.JPG',
+                        date: '2025',
+                        location: 'Sintra, Portugal'
+                    },
+                    {
+                        file: '11.JPG',
+                        date: '2025',
+                        location: 'Serra da Estrela, Portugal'
+                    },
+                    {
+                        file: '12.JPG',
+                        date: '2025',
+                        location: 'Gerês, Portugal'
+                    },
+                    {
+                        file: '13.JPG',
+                        date: '2025',
+                        location: 'Porto, Portugal'
+                    },
+                    {
+                        file: '14.JPG',
+                        date: '2025',
+                        location: 'Algarve, Portugal'
+                    },
+                    {
+                        file: '15.JPG',
+                        date: '2025',
+                        location: 'Sintra, Portugal'
+                    },
+                    {
+                        file: '16.JPG',
+                        date: '2025',
+                        location: 'Serra da Estrela, Portugal'
+                    },
+                    {
+                        file: '17.JPG',
+                        date: '2025',
+                        location: 'Gerês, Portugal'
+                    },
+                    {
+                        file: '18.JPG',
+                        date: '2025',
+                        location: 'Porto, Portugal'
+                    }
+                ];
+
+
+        let currentIndex = 0;
+        const gallery = document.getElementById('gallery');
+        const photoDate = document.getElementById('photoDate');
+        const photoLocation = document.getElementById('photoLocation');
+        const progressBar = document.getElementById('progressBar');
+
+        // Criar frames de fotos
+        photos.forEach((photo, index) => {
+            const frame = document.createElement('div');
+            frame.className = 'photo-frame hidden';
+            frame.innerHTML = `<img src="${photo.file}" alt="Fotografia ${index + 1}">`;
+            gallery.appendChild(frame);
+        });
+
+        const frames = document.querySelectorAll('.photo-frame');
+
+        function updateGallery() {
+            frames.forEach((frame, index) => {
+                frame.className = 'photo-frame hidden';
+                
+                if (index === currentIndex) {
+                    frame.className = 'photo-frame active';
+                } else if (index === (currentIndex - 1 + photos.length) % photos.length) {
+                    frame.className = 'photo-frame prev';
+                } else if (index === (currentIndex + 1) % photos.length) {
+                    frame.className = 'photo-frame next';
+                }
+            });
+
+            // Atualizar informações
+            photoDate.textContent = photos[currentIndex].date;
+            photoLocation.textContent = photos[currentIndex].location;
+            
+            // Atualizar barra de progresso
+            const progress = ((currentIndex + 1) / photos.length) * 100;
+            progressBar.style.width = progress + '%';
+        }
+
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            currentIndex = (currentIndex - 1 + photos.length) % photos.length;
+            updateGallery();
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            currentIndex = (currentIndex + 1) % photos.length;
+            updateGallery();
+        });
+
+        // Suporte para teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                currentIndex = (currentIndex - 1 + photos.length) % photos.length;
+                updateGallery();
+            } else if (e.key === 'ArrowRight') {
+                currentIndex = (currentIndex + 1) % photos.length;
+                updateGallery();
+            }
+        });
+
+        // Inicializar galeria
+        updateGallery();
+    </script>
+</body>
+</html>
